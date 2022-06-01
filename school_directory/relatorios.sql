@@ -91,25 +91,25 @@ select * from instructor i
 select * from teaches t 
 select * from takes t
 
-select distinct(s."name") as student, c.title, t.grade, t.semester, t."year", i.dept_name, i."name" as instructor 
+select tbl1."name", tbl2.grade, tbl1.title, tbl1.instructor, tbl1.dept_name, tbl1.sec_id from
+  (
+  select s.id, s2.sec_id , s."name", c.title, /*t.grade,*/ s2.semester, s2."year", i.dept_name, i."name" as instructor 
 from course c 
  join instructor i using(dept_name) 
  join teaches tc using(course_id)
  join student s using(dept_name)
- join takes t using(course_id) 
-where t."year"::int  = 2010
-group by s."name" , c.title, t.grade, t.semester, t."year", i.dept_name , i."name" 
-
---tentativa
-select distinct(s."name") as student, c.title, t.grade, t."year"
-from course c  
-join takes t  using(course_id)
-join student s using(dept_name)
-where t."year"::int  = 2010
-
---tentativa
-select i."name" as instructor, i.dept_name from course c 
-join instructor i using(dept_name) 
-join teaches tc using(course_id)
-
+ --join takes t using(course_id) 
+ join "section" s2 using(course_id)
+where s2."year"::int  = 2010
+group by s.id, s2.sec_id, s."name" , c.title, /*t.grade,*/ s2.semester, s2."year", i.dept_name , i."name"
+  ) tbl1
+  join (
+   select id, t.course_id, t.sec_id, t.semester, t."year", grade
+   from takes t
+   join student s using(id)
+   join course c2 using(course_id)
+   join "section" s3  using(sec_id)
+   group by id, t.course_id, t.sec_id, t.semester, t."year"
+  ) tbl2
+  on tbl1.id = tbl2.id  where tbl2."year" = 2010;
 
